@@ -6,6 +6,9 @@ part 'patient_model.g.dart';
 @JsonSerializable(explicitToJson: true)
 class PatientModel {
   final int? patientId;
+
+  final String? publicId;
+
   final String? name;
   final String? lastName;
   final String? secondLastName;
@@ -19,10 +22,14 @@ class PatientModel {
   final String? allergies;
   final String? phone;
   final String? email;
-  final DateTime? timestamp;
+  @JsonKey(name: 'createdAt')
+  final DateTime? createdAt;
+  @JsonKey(name: 'updatedAt')
+  final DateTime? updatedAt;
 
   PatientModel({
     this.patientId,
+    this.publicId,
     this.name,
     this.lastName,
     this.secondLastName,
@@ -31,7 +38,8 @@ class PatientModel {
     this.allergies,
     this.phone,
     this.email,
-    this.timestamp,
+    this.createdAt,
+    this.updatedAt,
   });
 
   factory PatientModel.fromJson(Map<String, dynamic> json) =>

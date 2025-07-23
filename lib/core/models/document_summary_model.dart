@@ -5,19 +5,20 @@ part 'document_summary_model.g.dart';
 
 @JsonSerializable()
 class DocumentSummaryModel {
-  final DateTime? timestamp;
-  final int? documentId;
+  final int documentId;
+  final DateTime timestamp;
 
+  // Usamos un valor desconocido por si en el futuro añades tipos que la app vieja no conoce
   @JsonKey(unknownEnumValue: DocumentType.EVOLUTION_NOTE)
-  final DocumentType? documentType;
+  final DocumentType documentType;
 
   final String? documentName;
   final String? doctorName;
 
   DocumentSummaryModel({
-    this.timestamp,
-    this.documentId,
-    this.documentType,
+    required this.documentId,
+    required this.timestamp,
+    required this.documentType,
     this.documentName,
     this.doctorName,
   });

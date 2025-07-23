@@ -9,8 +9,14 @@ part of 'evolution_note_model.dart';
 EvolutionNoteModel _$EvolutionNoteModelFromJson(Map<String, dynamic> json) =>
     EvolutionNoteModel(
       documentId: (json['documentId'] as num?)?.toInt(),
-      doctorId: (json['doctorId'] as num?)?.toInt(),
-      patientId: (json['patientId'] as num?)?.toInt(),
+      doctor: json['doctor'] == null
+          ? null
+          : UserModel.fromJson(json['doctor'] as Map<String, dynamic>),
+      doctorId: (json['doctor_license'] as num?)?.toInt(),
+      patient: json['patient'] == null
+          ? null
+          : PatientModel.fromJson(json['patient'] as Map<String, dynamic>),
+      patientId: (json['patient_id'] as num?)?.toInt(),
       documentName: json['documentName'] as String?,
       weight: (json['weight'] as num?)?.toDouble(),
       height: (json['height'] as num?)?.toDouble(),
@@ -25,6 +31,9 @@ EvolutionNoteModel _$EvolutionNoteModelFromJson(Map<String, dynamic> json) =>
       timestamp: json['timestamp'] == null
           ? null
           : DateTime.parse(json['timestamp'] as String),
+      documentType:
+          $enumDecodeNullable(_$DocumentTypeEnumMap, json['documentType']) ??
+              DocumentType.EVOLUTION_NOTE,
       respiratoryRate: (json['respiratoryRate'] as num?)?.toInt(),
       currentCondition: json['currentCondition'] as String?,
       generalInspection: json['generalInspection'] as String?,
@@ -36,8 +45,10 @@ EvolutionNoteModel _$EvolutionNoteModelFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$EvolutionNoteModelToJson(EvolutionNoteModel instance) =>
     <String, dynamic>{
       'documentId': instance.documentId,
-      'doctorId': instance.doctorId,
-      'patientId': instance.patientId,
+      'doctor': instance.doctor?.toJson(),
+      'doctor_license': instance.doctorId,
+      'patient': instance.patient?.toJson(),
+      'patient_id': instance.patientId,
       'documentName': instance.documentName,
       'weight': instance.weight,
       'height': instance.height,
@@ -50,6 +61,7 @@ Map<String, dynamic> _$EvolutionNoteModelToJson(EvolutionNoteModel instance) =>
       'diagnosticImpression': instance.diagnosticImpression,
       'instructions': instance.instructions,
       'timestamp': instance.timestamp?.toIso8601String(),
+      'documentType': _$DocumentTypeEnumMap[instance.documentType],
       'respiratoryRate': instance.respiratoryRate,
       'currentCondition': instance.currentCondition,
       'generalInspection': instance.generalInspection,
@@ -57,3 +69,9 @@ Map<String, dynamic> _$EvolutionNoteModelToJson(EvolutionNoteModel instance) =>
       'treatmentPlan': instance.treatmentPlan,
       'laboratoryResults': instance.laboratoryResults,
     };
+
+const _$DocumentTypeEnumMap = {
+  DocumentType.PRESCRIPTION: 'PRESCRIPTION',
+  DocumentType.CLINICAL_HISTORY: 'CLINICAL_HISTORY',
+  DocumentType.EVOLUTION_NOTE: 'EVOLUTION_NOTE',
+};

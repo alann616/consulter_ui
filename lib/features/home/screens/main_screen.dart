@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+import 'package:consulter_ui/core/models/enums.dart';
 import 'package:consulter_ui/features/auth/providers/auth_provider.dart';
 import 'package:consulter_ui/features/patients/providers/patient_provider.dart';
 import 'package:consulter_ui/features/patients/screens/patient_detail_screen.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
 import 'package:flutter/material.dart' as material;
 import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 
 // --- Widget público principal (sin cambios) ---
 class MainScreen extends ConsumerWidget {
@@ -62,7 +64,7 @@ class _WindowsShellState extends ConsumerState<_WindowsShell> {
         ),
         leading: showBackButton
             ? fluent.IconButton(
-                icon: const Icon(fluent.FluentIcons.back, size: 20),
+                icon: const Icon(fluent.FluentIcons.back, size: 18),
                 onPressed: () =>
                     ref.read(selectedPatientIdProvider.notifier).state = null,
               )
@@ -72,39 +74,183 @@ class _WindowsShellState extends ConsumerState<_WindowsShell> {
       pane: fluent.NavigationPane(
         selected: _currentIndex,
         onChanged: (index) {
-          if (_currentIndex != index) {
-            ref.read(selectedPatientIdProvider.notifier).state = null;
-          }
           setState(() => _currentIndex = index);
         },
         displayMode: fluent.PaneDisplayMode.compact,
         items: [
           fluent.PaneItem(
-            icon: const Icon(fluent.FluentIcons.contact_list),
+            icon: const Icon(fluent.FluentIcons.contact_list, size: 18),
             title: const Text('Pacientes'),
             body: const _ResizablePanels(),
           ),
           fluent.PaneItem(
-            icon: const Icon(fluent.FluentIcons.calendar),
-            title: const Text('Citas'),
-            body: const Center(child: Text('Aquí irá la pantalla de Citas')),
+            icon: const Icon(fluent.FluentIcons.history, size: 18),
+            title: const Text('Historial'),
+            body: const _DocumentHistoryView(),
           ),
         ],
         footerItems: [
           fluent.PaneItemSeparator(),
           fluent.PaneItem(
-            icon: const Icon(fluent.FluentIcons.settings),
+            icon: const Icon(fluent.FluentIcons.settings, size: 18),
             title: const Text('Ajustes'),
             body: const Center(child: Text('Aquí irá la pantalla de Ajustes')),
           ),
           fluent.PaneItemAction(
-            icon: const Icon(fluent.FluentIcons.sign_out),
+            icon: const Icon(fluent.FluentIcons.sign_out, size: 18),
             title: const Text('Cambiar Perfil'),
             onTap: () {
               ref.read(authNotifierProvider.notifier).logout();
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+// --- NUEVO WIDGET PARA LA PANTALLA DE HISTORIAL ---
+class _DocumentHistoryView extends ConsumerWidget {
+  const _DocumentHistoryView();
+
+  String _getDocumentTypeName(DocumentType type) {
+    switch (type) {
+      case DocumentType.EVOLUTION_NOTE:
+        return 'Nota de Evolución';
+      case DocumentType.CLINICAL_HISTORY:
+        return 'Historia Clínica';
+      case DocumentType.PRESCRIPTION:
+        return 'Receta Médica';
+      default:
+        return 'Documento';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedPatientId = ref.watch(selectedPatientIdProvider);
+
+    // Si no hay paciente seleccionado, muestra un mensaje.
+    if (selectedPatientId == null) {
+      return const fluent.Center(
+        child: fluent.Column(
+          mainAxisAlignment: fluent.MainAxisAlignment.center,
+          children: [
+            Icon(fluent.FluentIcons.contact_info, size: 48),
+            fluent.SizedBox(height: 12),
+            Text('Seleccione un paciente para ver su historial de documentos'),
+          ],
+        ),
+      );
+    }
+
+    // Si hay un paciente, usa el provider para obtener su historial.
+    final historyAsync = ref.watch(documentHistoryProvider(selectedPatientId));
+    final DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+    final DateFormat timeFormat = DateFormat('hh:mm a');
+
+    return fluent.ScaffoldPage(
+      header: const fluent.PageHeader(
+          title: Text('Historial de Documentos del Paciente')),
+      content: fluent.Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: historyAsync.when(
+          loading: () => const fluent.Center(child: fluent.ProgressRing()),
+          error: (err, stack) =>
+              fluent.Center(child: Text('Error al cargar historial: $err')),
+          data: (documents) {
+            if (documents.isEmpty) {
+              return const fluent.Center(
+                  child: Text(
+                      'Este paciente no tiene documentos en su historial.'));
+            }
+
+            return fluent.Table(
+              columnWidths: const {
+                0: fluent.FlexColumnWidth(), // Fecha
+                1: fluent.IntrinsicColumnWidth(), // Hora
+                2: fluent.FlexColumnWidth(2), // Tipo
+                3: fluent.FlexColumnWidth(2), // Doctor
+                4: fluent.IntrinsicColumnWidth(), // Acciones
+              },
+              children: [
+                // Encabezados de la tabla
+                const fluent.TableRow(children: [
+                  fluent.Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('Fecha',
+                          style:
+                              TextStyle(fontWeight: fluent.FontWeight.bold))),
+                  fluent.Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('Hora',
+                          style:
+                              TextStyle(fontWeight: fluent.FontWeight.bold))),
+                  fluent.Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('Tipo de Documento',
+                          style:
+                              TextStyle(fontWeight: fluent.FontWeight.bold))),
+                  fluent.Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('Doctor a Cargo',
+                          style:
+                              TextStyle(fontWeight: fluent.FontWeight.bold))),
+                  fluent.Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('Acciones',
+                          style:
+                              TextStyle(fontWeight: fluent.FontWeight.bold))),
+                ]),
+                // Filas de datos
+                ...documents.map((doc) => fluent.TableRow(
+                      children: [
+                        fluent.TableCell(
+                            verticalAlignment:
+                                fluent.TableCellVerticalAlignment.middle,
+                            child: fluent.Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(dateFormat.format(doc.timestamp)))),
+                        fluent.TableCell(
+                            verticalAlignment:
+                                fluent.TableCellVerticalAlignment.middle,
+                            child: fluent.Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(timeFormat.format(doc.timestamp)))),
+                        fluent.TableCell(
+                            verticalAlignment:
+                                fluent.TableCellVerticalAlignment.middle,
+                            child: fluent.Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                    _getDocumentTypeName(doc.documentType)))),
+                        fluent.TableCell(
+                            verticalAlignment:
+                                fluent.TableCellVerticalAlignment.middle,
+                            child: fluent.Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(doc.doctorName ?? 'N/A'))),
+                        fluent.TableCell(
+                          verticalAlignment:
+                              fluent.TableCellVerticalAlignment.middle,
+                          child: fluent.Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: fluent.FilledButton(
+                              child: const Text('Ver'),
+                              onPressed: () {
+                                // Aquí iría la lógica para navegar al documento específico
+                                print(
+                                    'Abrir doc ID: ${doc.documentId}, Tipo: ${doc.documentType}');
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    )),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

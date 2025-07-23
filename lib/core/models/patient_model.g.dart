@@ -8,6 +8,7 @@ part of 'patient_model.dart';
 
 PatientModel _$PatientModelFromJson(Map<String, dynamic> json) => PatientModel(
       patientId: (json['patientId'] as num?)?.toInt(),
+      publicId: json['publicId'] as String?,
       name: json['name'] as String?,
       lastName: json['lastName'] as String?,
       secondLastName: json['secondLastName'] as String?,
@@ -19,14 +20,18 @@ PatientModel _$PatientModelFromJson(Map<String, dynamic> json) => PatientModel(
       allergies: json['allergies'] as String?,
       phone: json['phone'] as String?,
       email: json['email'] as String?,
-      timestamp: json['timestamp'] == null
+      createdAt: json['createdAt'] == null
           ? null
-          : DateTime.parse(json['timestamp'] as String),
+          : DateTime.parse(json['createdAt'] as String),
+      updatedAt: json['updatedAt'] == null
+          ? null
+          : DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$PatientModelToJson(PatientModel instance) =>
     <String, dynamic>{
       'patientId': instance.patientId,
+      'publicId': instance.publicId,
       'name': instance.name,
       'lastName': instance.lastName,
       'secondLastName': instance.secondLastName,
@@ -35,7 +40,8 @@ Map<String, dynamic> _$PatientModelToJson(PatientModel instance) =>
       'allergies': instance.allergies,
       'phone': instance.phone,
       'email': instance.email,
-      'timestamp': instance.timestamp?.toIso8601String(),
+      'createdAt': instance.createdAt?.toIso8601String(),
+      'updatedAt': instance.updatedAt?.toIso8601String(),
     };
 
 const _$GenderEnumMap = {

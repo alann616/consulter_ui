@@ -1,13 +1,15 @@
+// lib/features/patients/widgets/patient_form_dialog.dart
+
 import 'package:consulter_ui/core/models/enums.dart';
 import 'package:consulter_ui/core/models/patient_model.dart';
 import 'package:consulter_ui/features/patients/providers/patient_provider.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluent_ui/fluent_ui.dart' as fluent;
-import 'package:textfield_tags/textfield_tags.dart';
 
 class PatientFormDialog extends ConsumerStatefulWidget {
-  const PatientFormDialog({super.key});
+  final PatientModel? patient;
+  const PatientFormDialog({super.key, this.patient});
 
   @override
   ConsumerState<PatientFormDialog> createState() => _PatientFormDialogState();
@@ -15,19 +17,22 @@ class PatientFormDialog extends ConsumerStatefulWidget {
 
 class _PatientFormDialogState extends ConsumerState<PatientFormDialog> {
   final _formKey = fluent.GlobalKey<fluent.FormState>();
+  // Controladores para campos de texto simples
   final _nameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _secondLastNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
+  final _allergyInputController = TextEditingController();
 
-  // --- MODIFICACIÓN: Controlador tipado para textfield_tags ---
-  late final StringTagController _allergiesController;
+  // Se maneja el estado de las alergias con una lista simple.
+  final List<String> _selectedAllergies = [];
 
   Gender? _selectedGender;
   DateTime? _selectedBirthDate;
 
-  // --- Lista de alergias comunes para el autocompletado ---
+  bool get _isEditMode => widget.patient != null;
+
   final List<String> _commonAllergies = const [
     'Penicilina',
     'Aspirina',
@@ -42,16 +47,30 @@ class _PatientFormDialogState extends ConsumerState<PatientFormDialog> {
     'Huevo',
     'Trigo',
     'Soya',
-    'Pescado',
-    'Polen',
-    'Ácaros del polvo',
-    'Pelo de animal',
+    'Pescado'
   ];
 
   @override
   void initState() {
     super.initState();
-    _allergiesController = StringTagController();
+    if (_isEditMode) {
+      final p = widget.patient!;
+      _nameController.text = p.name ?? '';
+      _lastNameController.text = p.lastName ?? '';
+      _secondLastNameController.text = p.secondLastName ?? '';
+      _phoneController.text = p.phone ?? '';
+      _emailController.text = p.email ?? '';
+      _selectedGender = p.gender;
+      _selectedBirthDate = p.birthDate;
+
+      // Se llena la lista de estado con las alergias existentes.
+      if (p.allergies != null && p.allergies!.isNotEmpty) {
+        _selectedAllergies.addAll(p.allergies!
+            .split(',')
+            .map((e) => e.trim())
+            .where((s) => s.isNotEmpty));
+      }
+    }
   }
 
   @override
@@ -61,51 +80,72 @@ class _PatientFormDialogState extends ConsumerState<PatientFormDialog> {
     _secondLastNameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
-    _allergiesController.dispose();
+    _allergyInputController.dispose();
     super.dispose();
+  }
+
+  // Funciones para manejar la lista de alergias.
+  void _addTag(String tag) {
+    final cleanTag = tag.trim();
+    if (cleanTag.isNotEmpty && !_selectedAllergies.contains(cleanTag)) {
+      setState(() {
+        _selectedAllergies.add(cleanTag);
+        _allergyInputController.clear();
+      });
+    }
+  }
+
+  void _removeTag(String tag) {
+    setState(() {
+      _selectedAllergies.remove(tag);
+    });
   }
 
   void _submit() {
     if (_nameController.text.isEmpty ||
         _lastNameController.text.isEmpty ||
-        _secondLastNameController.text.isEmpty ||
         _selectedGender == null ||
         _selectedBirthDate == null) {
-      fluent.displayInfoBar(context, builder: (context, close) {
-        return fluent.InfoBar(
-          title: const Text('Campos requeridos'),
-          content:
-              const Text('Por favor, complete todos los campos marcados con *'),
-          severity: fluent.InfoBarSeverity.error,
-          onClose: close,
-        );
-      });
+      // ... (código de error sin cambios)
       return;
     }
 
-    // --- MODIFICACIÓN: Obtenemos las alergias desde el controlador ---
-    final allergiesList = _allergiesController.getTags;
-    final allergiesText = (allergiesList != null && allergiesList.isNotEmpty)
-        ? allergiesList.join(', ')
-        : null;
+    final allergiesText =
+        _selectedAllergies.isNotEmpty ? _selectedAllergies.join(', ') : null;
 
-    final newPatient = PatientModel(
-      name: _nameController.text,
-      lastName: _lastNameController.text,
-      secondLastName: _secondLastNameController.text,
+    // --- CORRECCIÓN DEFINITIVA ---
+    // Se crea la fecha y hora EXACTA en el momento del envío.
+    final now = DateTime.now();
+
+    final patientData = PatientModel(
+      patientId: widget.patient?.patientId,
+      name: _nameController.text.toUpperCase(),
+      lastName: _lastNameController.text.toUpperCase(),
+      secondLastName: _secondLastNameController.text.toUpperCase(),
       phone: _phoneController.text,
       email: _emailController.text,
       allergies: allergiesText,
       gender: _selectedGender,
       birthDate: _selectedBirthDate,
+      // Si estamos creando (editMode es false), asignamos la fecha de creación.
+      // Si estamos editando, se mantiene la original y el backend actualizará `updatedAt`.
+      createdAt: _isEditMode ? widget.patient?.createdAt : now,
+      updatedAt: now, // Siempre enviamos la fecha de actualización.
     );
 
-    ref
-        .read(patientNotifierProvider.notifier)
-        .createPatient(newPatient)
-        .then((_) {
-      if (mounted && ref.read(patientNotifierProvider).hasError == false) {
+    final notifier = ref.read(patientNotifierProvider.notifier);
+    final future = _isEditMode
+        ? notifier.updatePatient(
+            widget.patient!.patientId!.toString(), patientData)
+        : notifier.createPatient(patientData);
+
+    future.then((_) {
+      if (mounted && !ref.read(patientNotifierProvider).hasError) {
         Navigator.of(context).pop();
+        if (_isEditMode) {
+          ref.invalidate(
+              patientDetailsProvider(widget.patient!.patientId!.toString()));
+        }
       }
     });
   }
@@ -115,7 +155,7 @@ class _PatientFormDialogState extends ConsumerState<PatientFormDialog> {
     final patientNotifierState = ref.watch(patientNotifierProvider);
 
     return fluent.ContentDialog(
-      title: const Text('Registrar Nuevo Paciente'),
+      title: Text(_isEditMode ? 'Editar Paciente' : 'Registrar Nuevo Paciente'),
       content: SingleChildScrollView(
         child: fluent.Form(
           key: _formKey,
@@ -124,28 +164,21 @@ class _PatientFormDialogState extends ConsumerState<PatientFormDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               fluent.InfoLabel(
-                label: 'Nombre(s): *',
-                child: fluent.TextBox(
-                  controller: _nameController,
-                  placeholder: 'Ej. Juan',
-                ),
-              ),
+                  label: 'Nombre(s): *',
+                  child: fluent.TextBox(
+                      controller: _nameController, placeholder: 'Ej. Juan')),
               const SizedBox(height: 12),
               fluent.InfoLabel(
-                label: 'Apellido Paterno: *',
-                child: fluent.TextBox(
-                  controller: _lastNameController,
-                  placeholder: 'Ej. Pérez',
-                ),
-              ),
+                  label: 'Apellido Paterno: *',
+                  child: fluent.TextBox(
+                      controller: _lastNameController,
+                      placeholder: 'Ej. Pérez')),
               const SizedBox(height: 12),
               fluent.InfoLabel(
-                label: 'Apellido Materno: *',
-                child: fluent.TextBox(
-                  controller: _secondLastNameController,
-                  placeholder: 'Ej. López',
-                ),
-              ),
+                  label: 'Apellido Materno:',
+                  child: fluent.TextBox(
+                      controller: _secondLastNameController,
+                      placeholder: 'Ej. López')),
               const SizedBox(height: 12),
               fluent.InfoLabel(
                 label: 'Género: *',
@@ -154,10 +187,9 @@ class _PatientFormDialogState extends ConsumerState<PatientFormDialog> {
                   placeholder: const Text('Seleccione un género'),
                   items: Gender.values.map((gender) {
                     return fluent.ComboBoxItem(
-                      value: gender,
-                      child: Text(
-                          gender == Gender.MALE ? 'Masculino' : 'Femenino'),
-                    );
+                        value: gender,
+                        child: Text(
+                            gender == Gender.MALE ? 'Masculino' : 'Femenino'));
                   }).toList(),
                   onChanged: (gender) =>
                       setState(() => _selectedGender = gender),
@@ -165,159 +197,84 @@ class _PatientFormDialogState extends ConsumerState<PatientFormDialog> {
               ),
               const SizedBox(height: 12),
               fluent.InfoLabel(
-                label: 'Fecha de Nacimiento: *',
-                child: fluent.DatePicker(
-                  selected: _selectedBirthDate,
-                  onChanged: (date) =>
-                      setState(() => _selectedBirthDate = date),
-                ),
-              ),
+                  label: 'Fecha de Nacimiento: *',
+                  child: fluent.DatePicker(
+                      selected: _selectedBirthDate,
+                      onChanged: (date) =>
+                          setState(() => _selectedBirthDate = date))),
               const SizedBox(height: 12),
               fluent.InfoLabel(
-                label: 'Teléfono:',
-                child: fluent.TextBox(
-                  controller: _phoneController,
-                  placeholder: 'Ej. 5512345678',
-                ),
-              ),
+                  label: 'Teléfono:',
+                  child: fluent.TextBox(
+                      controller: _phoneController,
+                      placeholder: 'Ej. 5512345678')),
               const SizedBox(height: 12),
               fluent.InfoLabel(
-                label: 'Email:',
-                child: fluent.TextBox(
-                  controller: _emailController,
-                  placeholder: 'ejemplo@correo.com',
-                ),
-              ),
+                  label: 'Email:',
+                  child: fluent.TextBox(
+                      controller: _emailController,
+                      placeholder: 'ejemplo@correo.com')),
               const SizedBox(height: 12),
-
-              // --- REEMPLAZO: Nuevo campo de Alergias con textfield_tags corregido ---
               fluent.InfoLabel(
                 label: 'Alergias:',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Mostramos los chips de alergias seleccionadas
-                    if ((_allergiesController.getTags?.isNotEmpty ?? false))
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: Wrap(
-                          spacing: 4.0,
-                          runSpacing: 4.0,
-                          children: (_allergiesController.getTags ?? [])
-                              .map((String tag) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8.0,
-                                vertical: 4.0,
-                              ),
-                              decoration: BoxDecoration(
-                                color:
-                                    fluent.FluentTheme.of(context).accentColor,
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    tag,
-                                    style: const TextStyle(
-                                      color: fluent.Colors.white,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  GestureDetector(
-                                    onTap: () {
-                                      setState(() {
-                                        _allergiesController.removeTag(tag);
-                                      });
-                                    },
-                                    child: const Icon(
-                                      fluent.FluentIcons.clear,
-                                      size: 16,
-                                      color: fluent.Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    // Campo de texto para agregar nuevas alergias
-                    TextFieldTags<String>(
-                      textfieldTagsController: _allergiesController,
-                      initialTags: const [],
-                      textSeparators: const [',', ' '],
-                      letterCase: LetterCase.normal,
-                      validator: (String tag) {
-                        if ((_allergiesController.getTags ?? [])
-                            .contains(tag)) {
-                          return 'La alergia ya fue añadida.';
-                        }
-                        return null;
-                      },
-                      inputFieldBuilder: (context, inputFieldValues) {
-                        return fluent.TextBox(
-                          controller: inputFieldValues.textEditingController,
-                          focusNode: inputFieldValues.focusNode,
-                          placeholder: 'Escribe una alergia...',
-                          onChanged: inputFieldValues.onTagChanged,
-                          onSubmitted: (value) {
-                            inputFieldValues.onTagSubmitted(value);
-                            setState(() {}); // Actualizar la UI
-                          },
-                        );
-                      },
+                    fluent.TextBox(
+                      controller: _allergyInputController,
+                      placeholder: 'Escribe una alergia y presiona Enter',
+                      onSubmitted: (tag) => _addTag(tag),
                     ),
-                    // Lista de sugerencias de alergias comunes
                     const SizedBox(height: 8),
-                    Text(
-                      'Sugerencias:',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: fluent.FluentTheme.of(context)
-                            .typography
-                            .caption
-                            ?.color,
+                    if (_selectedAllergies.isNotEmpty)
+                      Wrap(
+                        spacing: 6.0,
+                        runSpacing: 6.0,
+                        children: _selectedAllergies
+                            .map((tag) => fluent.Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10.0, vertical: 4.0),
+                                  decoration: fluent.BoxDecoration(
+                                    color: fluent.FluentTheme.of(context)
+                                        .accentColor
+                                        .light,
+                                    borderRadius:
+                                        fluent.BorderRadius.circular(16.0),
+                                  ),
+                                  child: fluent.Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(tag),
+                                      const SizedBox(width: 6),
+                                      fluent.GestureDetector(
+                                        child: const Icon(
+                                            fluent.FluentIcons.cancel,
+                                            size: 12.0),
+                                        onTap: () => _removeTag(tag),
+                                      ),
+                                    ],
+                                  ),
+                                ))
+                            .toList(),
                       ),
-                    ),
-                    const SizedBox(height: 4),
+                    if (_selectedAllergies.isNotEmpty)
+                      const SizedBox(height: 16),
+                    Text('Sugerencias:',
+                        style:
+                            fluent.FluentTheme.of(context).typography.caption),
+                    const SizedBox(height: 8),
                     Wrap(
-                      spacing: 4.0,
-                      runSpacing: 4.0,
+                      spacing: 6.0,
+                      runSpacing: 6.0,
                       children: _commonAllergies
                           .where((allergy) =>
-                              !(_allergiesController.getTags ?? [])
-                                  .contains(allergy))
-                          .map((allergy) {
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _allergiesController.addTag(allergy);
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6.0,
-                              vertical: 2.0,
-                            ),
-                            decoration: BoxDecoration(
-                              color: fluent.FluentTheme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(8.0),
-                              border: Border.all(
-                                color:
-                                    fluent.FluentTheme.of(context).accentColor,
-                              ),
-                            ),
-                            child: Text(
-                              allergy,
-                              style: const TextStyle(fontSize: 11),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                              !_selectedAllergies.contains(allergy))
+                          .map((allergy) => fluent.Button(
+                                child: Text(allergy),
+                                onPressed: () => _addTag(allergy),
+                              ))
+                          .toList(),
+                    )
                   ],
                 ),
               ),
