@@ -10,9 +10,13 @@ ClinicalHistoryModel _$ClinicalHistoryModelFromJson(
         Map<String, dynamic> json) =>
     ClinicalHistoryModel(
       documentId: (json['documentId'] as num?)?.toInt(),
-      doctor: json['doctor'] == null
+      documentName: json['documentName'] as String?,
+      documentType:
+          $enumDecodeNullable(_$DocumentTypeEnumMap, json['documentType']),
+      timestamp: json['timestamp'] == null
           ? null
-          : UserModel.fromJson(json['doctor'] as Map<String, dynamic>),
+          : DateTime.parse(json['timestamp'] as String),
+      doctorLicense: (json['doctorLicense'] as num?)?.toInt(),
       weight: (json['weight'] as num?)?.toDouble(),
       height: (json['height'] as num?)?.toDouble(),
       bodyTemp: (json['bodyTemp'] as num?)?.toDouble(),
@@ -27,19 +31,19 @@ ClinicalHistoryModel _$ClinicalHistoryModelFromJson(
       currentCondition: json['currentCondition'] as String?,
       generalInspection: json['generalInspection'] as String?,
       prognosis: json['prognosis'] as String?,
-      type: json['type'] as bool?,
-      bodyMassIndex: (json['body_mass_index'] as num?)?.toDouble(),
-      capillaryGlycemia: (json['capillary_glycemia'] as num?)?.toDouble(),
-      cephalicPerimeter: (json['cephalic_perimeter'] as num?)?.toDouble(),
-      abdominalPerimeter: (json['abdominal_perimeter'] as num?)?.toDouble(),
+      type: json['type'] as String?,
+      bodyMassIndex: (json['bodyMassIndex'] as num?)?.toDouble(),
+      capillaryGlycemia: (json['capillaryGlycemia'] as num?)?.toDouble(),
+      cephalicPerimeter: (json['cephalicPerimeter'] as num?)?.toDouble(),
+      abdominalPerimeter: (json['abdominalPerimeter'] as num?)?.toDouble(),
       hereditary: json['hereditary'] == null
           ? null
           : HereditaryModel.fromJson(
               json['hereditary'] as Map<String, dynamic>),
-      nonPathological: json['non_pathological'] == null
+      nonPathological: json['nonPathological'] == null
           ? null
           : NonPathologicalModel.fromJson(
-              json['non_pathological'] as Map<String, dynamic>),
+              json['nonPathological'] as Map<String, dynamic>),
       pathological: json['pathological'] == null
           ? null
           : PathologicalModel.fromJson(
@@ -48,19 +52,22 @@ ClinicalHistoryModel _$ClinicalHistoryModelFromJson(
           ? null
           : GynecologicalModel.fromJson(
               json['gynecological'] as Map<String, dynamic>),
-      patientInterview: json['patient_interview'] == null
+      patientInterview: json['patientInterview'] == null
           ? null
           : PatientInterviewModel.fromJson(
-              json['patient_interview'] as Map<String, dynamic>),
-      doctorId: (json['doctorId'] as num?)?.toInt(),
-      patientId: (json['patient_id'] as num?)?.toInt(),
+              json['patientInterview'] as Map<String, dynamic>),
+      patientId: (json['patientId'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$ClinicalHistoryModelToJson(
         ClinicalHistoryModel instance) =>
     <String, dynamic>{
       'documentId': instance.documentId,
-      'doctor': instance.doctor?.toJson(),
+      'documentName': instance.documentName,
+      'documentType': _$DocumentTypeEnumMap[instance.documentType],
+      'timestamp': instance.timestamp?.toIso8601String(),
+      'doctorLicense': instance.doctorLicense,
+      'patientId': instance.patientId,
       'weight': instance.weight,
       'height': instance.height,
       'bodyTemp': instance.bodyTemp,
@@ -76,14 +83,19 @@ Map<String, dynamic> _$ClinicalHistoryModelToJson(
       'generalInspection': instance.generalInspection,
       'prognosis': instance.prognosis,
       'type': instance.type,
-      'body_mass_index': instance.bodyMassIndex,
-      'capillary_glycemia': instance.capillaryGlycemia,
-      'cephalic_perimeter': instance.cephalicPerimeter,
-      'abdominal_perimeter': instance.abdominalPerimeter,
+      'bodyMassIndex': instance.bodyMassIndex,
+      'capillaryGlycemia': instance.capillaryGlycemia,
+      'cephalicPerimeter': instance.cephalicPerimeter,
+      'abdominalPerimeter': instance.abdominalPerimeter,
       'hereditary': instance.hereditary?.toJson(),
-      'non_pathological': instance.nonPathological?.toJson(),
+      'nonPathological': instance.nonPathological?.toJson(),
       'pathological': instance.pathological?.toJson(),
       'gynecological': instance.gynecological?.toJson(),
-      'patient_interview': instance.patientInterview?.toJson(),
-      'patient_id': instance.patientId,
+      'patientInterview': instance.patientInterview?.toJson(),
     };
+
+const _$DocumentTypeEnumMap = {
+  DocumentType.PRESCRIPTION: 'PRESCRIPTION',
+  DocumentType.CLINICAL_HISTORY: 'CLINICAL_HISTORY',
+  DocumentType.EVOLUTION_NOTE: 'EVOLUTION_NOTE',
+};

@@ -1,28 +1,31 @@
 // lib/core/models/non_pathological_model.dart
+import 'package:consulter_ui/core/util/bool_from_int_converter.dart'; // <-- AÑADE ESTA LÍNEA
 import 'package:json_annotation/json_annotation.dart';
 
 part 'non_pathological_model.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class NonPathologicalModel {
-  @JsonKey(name: 'marital_status')
+  @JsonKey(name: 'maritalStatus')
   final String? maritalStatus;
   final bool? overcrowding;
   final bool? promiscuity;
   final String? religion;
   final String? occupation;
-  @JsonKey(name: 'floor_material')
+  @JsonKey(name: 'floorMaterial')
   final String? floorMaterial;
-  @JsonKey(name: 'wall_material')
+  @JsonKey(name: 'wallMaterial')
   final String? wallMaterial;
   final String? services;
-  @JsonKey(name: 'is_fully_vaccinated')
+
+  @JsonKey(name: 'isFullyVaccinated')
   final bool? isFullyVaccinated;
-  @JsonKey(name: 'substance_use')
+
+  @JsonKey(name: 'substanceUse')
   final String? substanceUse;
-  @JsonKey(name: 'is_smoker')
+  @JsonKey(name: 'isSmoker')
   final String? isSmoker;
-  @JsonKey(name: 'is_drinker')
+  @JsonKey(name: 'isDrinker')
   final String? isDrinker;
 
   NonPathologicalModel({

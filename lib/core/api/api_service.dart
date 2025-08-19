@@ -134,6 +134,19 @@ class ApiService {
     }
   }
 
+  Future<List<DocumentSummaryModel>> getAllDocuments() async {
+    final response = await _client.get(Uri.parse('$_baseUrl/documents/all'));
+    if (response.statusCode == 200) {
+      final List<dynamic> dataList =
+          jsonDecode(utf8.decode(response.bodyBytes));
+      return dataList
+          .map((data) => DocumentSummaryModel.fromJson(data))
+          .toList();
+    } else {
+      throw Exception('Fallo al obtener el historial global de documentos');
+    }
+  }
+
   Future<List<EvolutionNoteModel>> getEvolutionNotesByPatientId(
       String patientId) async {
     final response = await _client.get(

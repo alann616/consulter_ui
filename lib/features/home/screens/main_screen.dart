@@ -109,11 +109,11 @@ class _WindowsShellState extends ConsumerState<_WindowsShell> {
   }
 }
 
-// --- NUEVO WIDGET PARA LA PANTALLA DE HISTORIAL ---
 class _DocumentHistoryView extends ConsumerWidget {
   const _DocumentHistoryView();
 
-  String _getDocumentTypeName(DocumentType type) {
+  // Función para obtener el nombre del tipo de documento
+  String _getDocumentTypeName(DocumentType? type) {
     switch (type) {
       case DocumentType.EVOLUTION_NOTE:
         return 'Nota de Evolución';
@@ -121,136 +121,129 @@ class _DocumentHistoryView extends ConsumerWidget {
         return 'Historia Clínica';
       case DocumentType.PRESCRIPTION:
         return 'Receta Médica';
-      default:
-        return 'Documento';
+      // CAMBIO AQUÍ: Maneja el caso en que el tipo sea null
+      case null:
+        return 'Tipo Desconocido';
     }
+  }
+
+  // Función para obtener solo el primer nombre del paciente
+  String _getPatientFirstName(String? fullName) {
+    if (fullName == null || fullName.isEmpty) return 'N/A';
+    return fullName.split(' ')[0];
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedPatientId = ref.watch(selectedPatientIdProvider);
-
-    // Si no hay paciente seleccionado, muestra un mensaje.
-    if (selectedPatientId == null) {
-      return const fluent.Center(
-        child: fluent.Column(
-          mainAxisAlignment: fluent.MainAxisAlignment.center,
-          children: [
-            Icon(fluent.FluentIcons.contact_info, size: 48),
-            fluent.SizedBox(height: 12),
-            Text('Seleccione un paciente para ver su historial de documentos'),
-          ],
-        ),
-      );
-    }
-
-    // Si hay un paciente, usa el provider para obtener su historial.
-    final historyAsync = ref.watch(documentHistoryProvider(selectedPatientId));
-    final DateFormat dateFormat = DateFormat('dd/MM/yyyy');
-    final DateFormat timeFormat = DateFormat('hh:mm a');
+    // Usamos el nuevo provider que no depende de un paciente seleccionado
+    final allDocsAsync = ref.watch(allDocumentsProvider);
+    final DateFormat dateFormat = DateFormat('dd/MM/yyyy', 'es_MX');
+    final DateFormat timeFormat = DateFormat('hh:mm a', 'es_MX');
 
     return fluent.ScaffoldPage(
       header: const fluent.PageHeader(
-          title: Text('Historial de Documentos del Paciente')),
+        title: Text('Historial de Documentos Global'),
+      ),
       content: fluent.Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: historyAsync.when(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+        child: allDocsAsync.when(
           loading: () => const fluent.Center(child: fluent.ProgressRing()),
           error: (err, stack) =>
-              fluent.Center(child: Text('Error al cargar historial: $err')),
+              fluent.Center(child: Text('Error al cargar el historial: $err')),
           data: (documents) {
             if (documents.isEmpty) {
               return const fluent.Center(
-                  child: Text(
-                      'Este paciente no tiene documentos en su historial.'));
+                  child: Text('No hay documentos registrados en el sistema.'));
             }
 
-            return fluent.Table(
-              columnWidths: const {
-                0: fluent.FlexColumnWidth(), // Fecha
-                1: fluent.IntrinsicColumnWidth(), // Hora
-                2: fluent.FlexColumnWidth(2), // Tipo
-                3: fluent.FlexColumnWidth(2), // Doctor
-                4: fluent.IntrinsicColumnWidth(), // Acciones
-              },
-              children: [
-                // Encabezados de la tabla
-                const fluent.TableRow(children: [
-                  fluent.Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Fecha',
-                          style:
-                              TextStyle(fontWeight: fluent.FontWeight.bold))),
-                  fluent.Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Hora',
-                          style:
-                              TextStyle(fontWeight: fluent.FontWeight.bold))),
-                  fluent.Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Tipo de Documento',
-                          style:
-                              TextStyle(fontWeight: fluent.FontWeight.bold))),
-                  fluent.Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Doctor a Cargo',
-                          style:
-                              TextStyle(fontWeight: fluent.FontWeight.bold))),
-                  fluent.Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('Acciones',
-                          style:
-                              TextStyle(fontWeight: fluent.FontWeight.bold))),
-                ]),
-                // Filas de datos
-                ...documents.map((doc) => fluent.TableRow(
-                      children: [
-                        fluent.TableCell(
+            // La tabla con las columnas que solicitaste
+            return fluent.SizedBox(
+              width: double.infinity,
+              child: fluent.Table(
+                columnWidths: const {
+                  0: fluent.IntrinsicColumnWidth(), // ID
+                  1: fluent.FlexColumnWidth(), // Fecha y Hora
+                  2: fluent.FlexColumnWidth(2), // Paciente
+                  3: fluent.FlexColumnWidth(2), // Tipo de Documento
+                  4: fluent.FlexColumnWidth(2), // Doctor
+                  5: fluent.IntrinsicColumnWidth(), // Acciones
+                },
+                children: [
+                  // Encabezados de la tabla
+                  const fluent.TableRow(children: [
+                    _TableHeader('ID'),
+                    _TableHeader('Fecha y Hora'),
+                    _TableHeader('Paciente'),
+                    _TableHeader('Tipo de Documento'),
+                    _TableHeader('Doctor a Cargo'),
+                    _TableHeader('Acciones'),
+                  ]),
+                  // Filas de datos
+                  ...documents.map((doc) => fluent.TableRow(
+                        children: [
+                          _TableCell(doc.documentId.toString()),
+                          _TableCell(
+                              '${dateFormat.format(doc.timestamp)}\n${timeFormat.format(doc.timestamp)}'),
+                          _TableCell(_getPatientFirstName(doc.patientName)),
+                          _TableCell(_getDocumentTypeName(
+                              doc.documentType ?? DocumentType.EVOLUTION_NOTE)),
+                          _TableCell(doc.doctorName ?? 'N/A'),
+                          fluent.TableCell(
                             verticalAlignment:
                                 fluent.TableCellVerticalAlignment.middle,
                             child: fluent.Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(dateFormat.format(doc.timestamp)))),
-                        fluent.TableCell(
-                            verticalAlignment:
-                                fluent.TableCellVerticalAlignment.middle,
-                            child: fluent.Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(timeFormat.format(doc.timestamp)))),
-                        fluent.TableCell(
-                            verticalAlignment:
-                                fluent.TableCellVerticalAlignment.middle,
-                            child: fluent.Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                    _getDocumentTypeName(doc.documentType)))),
-                        fluent.TableCell(
-                            verticalAlignment:
-                                fluent.TableCellVerticalAlignment.middle,
-                            child: fluent.Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(doc.doctorName ?? 'N/A'))),
-                        fluent.TableCell(
-                          verticalAlignment:
-                              fluent.TableCellVerticalAlignment.middle,
-                          child: fluent.Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: fluent.FilledButton(
-                              child: const Text('Ver'),
-                              onPressed: () {
-                                // Aquí iría la lógica para navegar al documento específico
-                                print(
-                                    'Abrir doc ID: ${doc.documentId}, Tipo: ${doc.documentType}');
-                              },
+                              padding: const EdgeInsets.all(4.0),
+                              child: fluent.FilledButton(
+                                child: const Text('Ver'),
+                                onPressed: () {
+                                  // TODO: Implementar la lógica para abrir el documento.
+                                  // Necesitarás saber el tipo de documento y el ID para navegar
+                                  // a la pantalla de detalle correcta.
+                                  print(
+                                      'Abrir doc ID: ${doc.documentId}, Tipo: ${doc.documentType}');
+                                },
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    )),
-              ],
+                        ],
+                      )),
+                ],
+              ),
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+// Widget auxiliar para no repetir el estilo de los encabezados
+class _TableHeader extends fluent.StatelessWidget {
+  final String text;
+  const _TableHeader(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return fluent.Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(text,
+          style: const TextStyle(fontWeight: fluent.FontWeight.bold)),
+    );
+  }
+}
+
+// Widget auxiliar para las celdas de datos
+class _TableCell extends fluent.StatelessWidget {
+  final String text;
+  const _TableCell(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return fluent.TableCell(
+      verticalAlignment: fluent.TableCellVerticalAlignment.middle,
+      child: fluent.Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(text),
       ),
     );
   }

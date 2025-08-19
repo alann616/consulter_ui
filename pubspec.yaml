@@ -43,6 +43,12 @@ dependencies:
   # Autocomplete
   textfield_tags: ^3.0.1
 
+  pdf: ^3.11.3
+  printing: ^5.14.2
+  flutter_native_image: ^0.0.6+1
+  file_saver: ^0.3.1
+  path_provider: ^2.1.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -53,5 +59,11 @@ dev_dependencies:
   riverpod_generator: ^2.4.0 
   riverpod_lint: ^2.3.10 
 
+  pdf: ^3.11.3
+  printing: ^5.14.2
+  flutter_native_image: ^0.0.6+1
+
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/

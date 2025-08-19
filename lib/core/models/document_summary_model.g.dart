@@ -11,10 +11,12 @@ DocumentSummaryModel _$DocumentSummaryModelFromJson(
     DocumentSummaryModel(
       documentId: (json['documentId'] as num).toInt(),
       timestamp: DateTime.parse(json['timestamp'] as String),
-      documentType: $enumDecode(_$DocumentTypeEnumMap, json['documentType'],
+      documentType: $enumDecodeNullable(
+          _$DocumentTypeEnumMap, json['documentType'],
           unknownValue: DocumentType.EVOLUTION_NOTE),
       documentName: json['documentName'] as String?,
       doctorName: json['doctorName'] as String?,
+      patientName: json['patientName'] as String?,
     );
 
 Map<String, dynamic> _$DocumentSummaryModelToJson(
@@ -22,9 +24,10 @@ Map<String, dynamic> _$DocumentSummaryModelToJson(
     <String, dynamic>{
       'documentId': instance.documentId,
       'timestamp': instance.timestamp.toIso8601String(),
-      'documentType': _$DocumentTypeEnumMap[instance.documentType]!,
+      'documentType': _$DocumentTypeEnumMap[instance.documentType],
       'documentName': instance.documentName,
       'doctorName': instance.doctorName,
+      'patientName': instance.patientName,
     };
 
 const _$DocumentTypeEnumMap = {

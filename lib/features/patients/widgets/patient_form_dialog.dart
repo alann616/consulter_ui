@@ -37,6 +37,10 @@ class _PatientFormDialogState extends ConsumerState<PatientFormDialog> {
     'Penicilina',
     'Aspirina',
     'Ibuprofeno',
+    'Ketorolaco',
+    'Tramadol',
+    'Naproxeno',
+    'Diclofenaco',
     'Sulfamidas',
     'Látex',
     'Yodo',
@@ -47,7 +51,10 @@ class _PatientFormDialogState extends ConsumerState<PatientFormDialog> {
     'Huevo',
     'Trigo',
     'Soya',
-    'Pescado'
+    'Pescado',
+    'Polen',
+    'Ácaros del polvo',
+    'Pelo de animal',
   ];
 
   @override

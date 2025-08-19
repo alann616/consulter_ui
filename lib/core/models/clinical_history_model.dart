@@ -1,4 +1,5 @@
 // lib/core/models/clinical_history_model.dart
+import 'package:consulter_ui/core/models/enums.dart';
 import 'package:consulter_ui/core/models/gynecological_model.dart';
 import 'package:consulter_ui/core/models/hereditary_model.dart';
 import 'package:consulter_ui/core/models/non_pathological_model.dart';
@@ -11,9 +12,13 @@ part 'clinical_history_model.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class ClinicalHistoryModel {
-  // --- Campos heredados de Document y DoctorDocument ---
   final int? documentId;
-  final UserModel? doctor;
+  final String? documentName;
+  final DocumentType? documentType;
+  final DateTime? timestamp;
+  final int? doctorLicense;
+  @JsonKey(name: 'patientId')
+  final int? patientId;
   final double? weight;
   final double? height;
   final double? bodyTemp;
@@ -29,35 +34,30 @@ class ClinicalHistoryModel {
   final String? generalInspection;
   final String? prognosis;
 
-  // --- Campos propios de ClinicalHistory ---
-  final bool? type;
-  @JsonKey(name: 'body_mass_index')
+  final String? type;
+  @JsonKey(name: 'bodyMassIndex')
   final double? bodyMassIndex;
-  @JsonKey(name: 'capillary_glycemia')
+  @JsonKey(name: 'capillaryGlycemia')
   final double? capillaryGlycemia;
-  @JsonKey(name: 'cephalic_perimeter')
+  @JsonKey(name: 'cephalicPerimeter')
   final double? cephalicPerimeter;
-  @JsonKey(name: 'abdominal_perimeter')
+  @JsonKey(name: 'abdominalPerimeter')
   final double? abdominalPerimeter;
 
-  // --- Objetos anidados ---
   final HereditaryModel? hereditary;
-  @JsonKey(name: 'non_pathological')
+  @JsonKey(name: 'nonPathological')
   final NonPathologicalModel? nonPathological;
   final PathologicalModel? pathological;
   final GynecologicalModel? gynecological;
-  @JsonKey(name: 'patient_interview')
+  @JsonKey(name: 'patientInterview')
   final PatientInterviewModel? patientInterview;
-
-  // --- IDs para enviar al backend ---
-  @JsonKey(includeToJson: false)
-  final int? doctorId;
-  @JsonKey(name: 'patient_id')
-  final int? patientId;
 
   ClinicalHistoryModel({
     this.documentId,
-    this.doctor,
+    this.documentName,
+    this.documentType,
+    this.timestamp,
+    this.doctorLicense,
     this.weight,
     this.height,
     this.bodyTemp,
@@ -82,18 +82,11 @@ class ClinicalHistoryModel {
     this.pathological,
     this.gynecological,
     this.patientInterview,
-    this.doctorId,
     this.patientId,
   });
 
   factory ClinicalHistoryModel.fromJson(Map<String, dynamic> json) =>
       _$ClinicalHistoryModelFromJson(json);
 
-  Map<String, dynamic> toJson() {
-    final map = _$ClinicalHistoryModelToJson(this);
-    if (doctorId != null) {
-      map['doctor_license'] = doctorId;
-    }
-    return map;
-  }
+  Map<String, dynamic> toJson() => _$ClinicalHistoryModelToJson(this);
 }

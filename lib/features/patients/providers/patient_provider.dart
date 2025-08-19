@@ -97,7 +97,7 @@ class PatientNotifier extends StateNotifier<AsyncValue<void>> {
       state = AsyncValue.error(e, st);
     }
   }
-} // <-- La llave de cierre de la clase va aquí.
+}
 
 final patientNotifierProvider =
     StateNotifierProvider<PatientNotifier, AsyncValue<void>>((ref) {
@@ -108,4 +108,10 @@ final documentHistoryProvider = FutureProvider.autoDispose
     .family<List<DocumentSummaryModel>, String>((ref, patientId) {
   final apiService = ref.watch(apiServiceProvider);
   return apiService.getDocumentHistory(patientId);
+});
+
+final allDocumentsProvider =
+    FutureProvider.autoDispose<List<DocumentSummaryModel>>((ref) {
+  final apiService = ref.watch(apiServiceProvider);
+  return apiService.getAllDocuments();
 });

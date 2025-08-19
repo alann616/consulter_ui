@@ -1,3 +1,4 @@
+// lib/core/models/document_summary_model.dart
 import 'package:json_annotation/json_annotation.dart';
 import 'package:consulter_ui/core/models/enums.dart';
 
@@ -8,12 +9,12 @@ class DocumentSummaryModel {
   final int documentId;
   final DateTime timestamp;
 
-  // Usamos un valor desconocido por si en el futuro añades tipos que la app vieja no conoce
   @JsonKey(unknownEnumValue: DocumentType.EVOLUTION_NOTE)
-  final DocumentType documentType;
+  final DocumentType? documentType;
 
   final String? documentName;
   final String? doctorName;
+  final String? patientName;
 
   DocumentSummaryModel({
     required this.documentId,
@@ -21,6 +22,7 @@ class DocumentSummaryModel {
     required this.documentType,
     this.documentName,
     this.doctorName,
+    this.patientName,
   });
 
   factory DocumentSummaryModel.fromJson(Map<String, dynamic> json) =>

@@ -5,21 +5,27 @@ part 'hereditary_model.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class HereditaryModel {
-  @JsonKey(name: 'diabetes_mellitus')
+  @JsonKey(name: 'hereditaryId')
+  final int? hereditaryId;
+  @JsonKey(name: 'diabetesMellitus')
   final String? diabetesMellitus;
+  @JsonKey(name: 'hypertension')
   final String? hypertension;
+  @JsonKey(name: 'tuberculosis')
   final String? tuberculosis;
+  @JsonKey(name: 'neoplasms')
   final String? neoplasms;
-  @JsonKey(name: 'heart_conditions')
+  @JsonKey(name: 'heartConditions')
   final String? heartConditions;
-  @JsonKey(name: 'congenital_anomalies')
+  @JsonKey(name: 'congenitalAnomalies')
   final String? congenitalAnomalies;
-  @JsonKey(name: 'endocrine_disorders')
+  @JsonKey(name: 'endocrineDisorders')
   final String? endocrineDisorders;
-  @JsonKey(name: 'other_hereditary_conditions')
+  @JsonKey(name: 'otherHereditaryConditions')
   final String? otherHereditaryConditions;
 
   HereditaryModel({
+    this.hereditaryId,
     this.diabetesMellitus,
     this.hypertension,
     this.tuberculosis,

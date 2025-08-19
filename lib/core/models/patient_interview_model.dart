@@ -5,26 +5,32 @@ part 'patient_interview_model.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class PatientInterviewModel {
-  @JsonKey(name: 'review_of_systems')
+  @JsonKey(name: 'reviewOfSystems')
   final String? reviewOfSystems;
-  @JsonKey(name: 'general_symptoms')
-  final String? generalSymptoms;
+  @JsonKey(name: 'generalSimptoms')
+  final String? generalSimptoms;
+  @JsonKey(name: 'head')
   final String? head;
+  @JsonKey(name: 'neck')
   final String? neck;
+  @JsonKey(name: 'thorax')
   final String? thorax;
+  @JsonKey(name: 'abdomen')
   final String? abdomen;
+  @JsonKey(name: 'backbone')
   final String? backbone;
-  @JsonKey(name: 'external_genitalia')
+  @JsonKey(name: 'externalGenitalia')
   final String? externalGenitalia;
-  @JsonKey(name: 'rectal_touch')
+  @JsonKey(name: 'rectalTouch')
   final String? rectalTouch;
-  @JsonKey(name: 'vaginal_touch')
+  @JsonKey(name: 'vaginalTouch')
   final String? vaginalTouch;
+  @JsonKey(name: 'limbs')
   final String? limbs;
 
   PatientInterviewModel({
     this.reviewOfSystems,
-    this.generalSymptoms,
+    this.generalSimptoms,
     this.head,
     this.neck,
     this.thorax,

@@ -73,6 +73,17 @@ class _EvolutionNoteFormState extends ConsumerState<EvolutionNoteForm> {
       _treatmentPlanController.text = n.treatmentPlan ?? '';
       _treatmentController.text = n.treatment ?? '';
       _instructionsController.text = n.instructions ?? '';
+    } else {
+      _generalInspectionController.text =
+          'A LA EXPLORACIÓN FÍSICA SE ENCUENTRA CONSCIENTE ACTIVA, REACTIVA, PUPILAS ISOCÓRICAS NORMORREFLÉCTICAS, NARINAS PERMEABLES, OROFARINGE SIN ALTERACIONES, CUELLO CILÍNDRICO SIN ADENOMEGALIAS, TÓRAX SIMÉTRICO, ADECUADA AMPLEXIÓN Y AMPLEXACIÓN, RUIDOS CARDIACOS RÍTMICOS E INTENSOS, CAMPOS PULMONARES SIN PRESENCIA DE ESTERTORES, ABDOMEN BLANDO, NO DOLOROSO A LA PALPACIÓN, EXTREMIDADES INTEGRAS, ADECUADO LLENADO CAPILAR, PULSOS PERIFÉRICOS PRESENTES, REFLEJO CONSERVADOS';
+      _prognosisController.text = 'RESERVADO A EVOLUCIÓN DEL PACIENTE';
+      _treatmentController.text = '''
+- SE EXPLICAN DATOS DE ALARMA.
+- MEDIDAS GENERALES PARA LA PREVENCIÓN DEL COVID-19.
+- CONSUMIR ABUNDANTES LÍQUIDOS.''';
+      _instructionsController.text = '''
+· Cita abierta en caso de cualquier eventualidad.
+· Reposo relativo.''';
     }
   }
 
@@ -234,7 +245,8 @@ class _EvolutionNoteFormState extends ConsumerState<EvolutionNoteForm> {
                         style: theme.typography.subtitle),
                     Text('Fecha: $formattedDate',
                         style: theme.typography.subtitle),
-                    Text('Hora: $formattedTime')
+                    Text('Hora: $formattedTime',
+                        style: theme.typography.subtitle)
                   ],
                 ),
               ),
@@ -249,10 +261,10 @@ class _EvolutionNoteFormState extends ConsumerState<EvolutionNoteForm> {
                 physics: const fluent.NeverScrollableScrollPhysics(),
                 gridDelegate:
                     const fluent.SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 200,
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  childAspectRatio: 3 / 1,
+                  maxCrossAxisExtent: 150,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 3 / 1.5,
                 ),
                 itemCount: vitalSignsWidgets.length,
                 itemBuilder: (context, index) {
@@ -383,17 +395,19 @@ class _EvolutionNoteFormState extends ConsumerState<EvolutionNoteForm> {
           fluent.InfoLabel(
               label: 'Impresión Diagnóstica',
               child: fluent.TextBox(
-                  maxLines: 5, controller: _diagnosticImpressionController)),
+                  maxLines: null, controller: _diagnosticImpressionController)),
           const SizedBox(height: 16),
           fluent.InfoLabel(
               label: 'Plan de Tratamiento',
               child: fluent.TextBox(
-                  maxLines: 5, controller: _treatmentPlanController)),
+                maxLines: null,
+                controller: _treatmentPlanController,
+              )),
           const SizedBox(height: 16),
           fluent.InfoLabel(
               label: 'Pronóstico',
               child: fluent.TextBox(
-                  maxLines: 5, controller: _prognosisController)),
+                  maxLines: null, controller: _prognosisController)),
         ],
       ),
     );
@@ -408,12 +422,12 @@ class _EvolutionNoteFormState extends ConsumerState<EvolutionNoteForm> {
           fluent.InfoLabel(
               label: 'Tratamiento Farmacológico',
               child: fluent.TextBox(
-                  maxLines: 8, controller: _treatmentController)),
+                  maxLines: null, controller: _treatmentController)),
           const SizedBox(height: 16),
           fluent.InfoLabel(
               label: 'Indicaciones y Próxima Cita',
               child: fluent.TextBox(
-                  maxLines: 8, controller: _instructionsController)),
+                  maxLines: null, controller: _instructionsController)),
         ],
       ),
     );
@@ -438,7 +452,7 @@ class _VitalSignInput extends fluent.StatelessWidget {
       child: fluent.NumberBox<num>(
         value: value,
         onChanged: onChanged, // Se pasa el callback (puede ser null)
-        mode: fluent.SpinButtonPlacementMode.inline,
+        mode: fluent.SpinButtonPlacementMode.compact,
       ),
     );
   }

@@ -5,19 +5,21 @@ part 'pathological_model.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class PathologicalModel {
-  @JsonKey(name: 'surgical_history')
+  @JsonKey(name: 'surgicalHistory')
   final String? surgicalHistory;
-  @JsonKey(name: 'transfusion_history')
+  @JsonKey(name: 'transfusionHistory')
   final String? transfusionHistory;
-  @JsonKey(name: 'traumatic_history')
+  @JsonKey(name: 'traumaticHistory')
   final String? traumaticHistory;
-  @JsonKey(name: 'allergic_history')
+  @JsonKey(name: 'allergicHistory')
   final String? allergicHistory;
+  @JsonKey(name: 'diabetes')
   final String? diabetes;
+  @JsonKey(name: 'hypertension')
   final String? hypertension;
-  @JsonKey(name: 'coombs_test')
+  @JsonKey(name: 'coombsTest')
   final String? coombsTest;
-  @JsonKey(name: 'other_pathological_conditions')
+  @JsonKey(name: 'otherPathologicalConditions')
   final String? otherPathologicalConditions;
 
   PathologicalModel({

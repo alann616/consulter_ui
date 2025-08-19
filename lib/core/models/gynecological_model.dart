@@ -5,35 +5,35 @@ part 'gynecological_model.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class GynecologicalModel {
-  @JsonKey(name: 'menarche_age')
+  @JsonKey(name: 'menarcheAge')
   final int? menarcheAge;
-  @JsonKey(name: 'menstrual_cycle_regularity')
+  @JsonKey(name: 'menstrualCycleRegularity')
   final String? menstrualCycleRegularity;
-  @JsonKey(name: 'sexual_activity_start_age')
+  @JsonKey(name: 'sexualActivityStartAge')
   final int? sexualActivityStartAge;
-  @JsonKey(name: 'last_menstrual_period')
+  @JsonKey(name: 'lastMenstrualPeriod')
   final DateTime? lastMenstrualPeriod;
-  @JsonKey(name: 'number_of_pregnancies')
+  @JsonKey(name: 'numberOfPregnancies')
   final int? numberOfPregnancies;
-  @JsonKey(name: 'number_of_births')
+  @JsonKey(name: 'numberOfBirths')
   final int? numberOfBirths;
-  @JsonKey(name: 'number_of_abortions')
+  @JsonKey(name: 'numberOfAbortions')
   final int? numberOfAbortions;
-  @JsonKey(name: 'number_of_cesarean_sections')
+  @JsonKey(name: 'numberOfCesareanSections')
   final int? numberOfCesareanSections;
-  @JsonKey(name: 'uterine_curettage')
+  @JsonKey(name: 'uterineCurettage')
   final String? uterineCurettage;
-  @JsonKey(name: 'last_delivery_date')
+  @JsonKey(name: 'lastDeliveryDate')
   final DateTime? lastDeliveryDate;
-  @JsonKey(name: 'macrosomic_children')
+  @JsonKey(name: 'macrosomicChildren')
   final int? macrosomicChildren;
-  @JsonKey(name: 'low_birth_weight_children')
+  @JsonKey(name: 'lowBirthWeightChildren')
   final int? lowBirthWeightChildren;
-  @JsonKey(name: 'last_pap_smear_date')
+  @JsonKey(name: 'lastPapSmearDate')
   final DateTime? lastPapSmearDate;
-  @JsonKey(name: 'family_planning_method')
+  @JsonKey(name: 'familyPlanningMethod')
   final String? familyPlanningMethod;
-  @JsonKey(name: 'contraceptive_usage_duration')
+  @JsonKey(name: 'contraceptiveUsageDuration')
   final String? contraceptiveUsageDuration;
 
   GynecologicalModel({
